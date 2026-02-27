@@ -3,7 +3,7 @@ pipeline {
   agent any
 
   environment {
-    IMAGE_NAME            = "khalil_ghimaji/mon-app-devops"
+    IMAGE_NAME            = "khalilghimaji/counter-app"
     IMAGE_TAG             = "${BUILD_NUMBER}"
     DOCKER_CREDENTIALS_ID = "docker-hub-credentials"
   }
