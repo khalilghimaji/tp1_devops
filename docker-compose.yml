@@ -1,0 +1,52 @@
+# ─────────────────────────────────────────────────────────────────
+# Les variables sont lues depuis le fichier .env automatiquement.
+# Cela évite de coder en dur des valeurs sensibles ou variables
+# directement dans ce fichier YAML.
+# ─────────────────────────────────────────────────────────────────
+
+services:
+
+  # ───── Service Web (Flask Visit Counter) ─────
+  web:
+    build: .
+    image: ${IMAGE_NAME}:${IMAGE_TAG}
+    ports:
+      - 80:${APP_INTERNAL_PORT}
+    expose:
+      - "${APP_INTERNAL_PORT}"
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    depends_on:
+      - db-service
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ───── Service Base de Données (Redis) ─────
+  db-service:
+    image: redis:7-alpine
+    container_name: db-service
+    volumes:
+      # Montage du volume nommé pour la persistance des données
+      - redis-data:/data
+    # Active la persistance Redis (AOF = Append Only File)
+    command: redis-server --appendonly yes
+    networks:
+      - app-network
+    restart: unless-stopped
+
+# ─────────────────────────────────────────────────────────────────
+# Réseau bridge dédié pour isoler les services
+# ─────────────────────────────────────────────────────────────────
+networks:
+  app-network:
+    driver: bridge
+
+# ─────────────────────────────────────────────────────────────────
+# Volume nommé pour la persistance des données Redis
+# Les données survivent à la suppression et recréation du conteneur
+# ─────────────────────────────────────────────────────────────────
+volumes:
+  redis-data:
+    driver: local
